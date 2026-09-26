@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum JewelleryType {
+  EARRINGS
+  NECKLACE
+  CHAIN
+  LONG_CHAIN
+  BANGLE
+  BRACELET
+  RING
+  ANKLET
+  HAIR
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  READY
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  COD
+  ONLINE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum DeliveryMethod {
+  DELIVERY
+  PICKUP
+}
+
+enum TryOnSource {
+  AI_MODEL
+  UPLOAD
+}
+
+enum TryOnStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}
+
+model User {
+  id        String         @id @default(cuid())
+  name      String
+  email     String         @unique
+  phone     String?
+  password  String
+  role      Role           @default(CUSTOMER)
+  createdAt DateTime       @default(now())
+  cart      Cart?
+  orders    Order[]
+  wishlist  WishlistItem[]
+  tryOns    TryOn[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  imageUrl String?
+  sort     Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  name          String
+  slug          String         @unique
+  description   String?
+  price         Int
+  stock         Int            @default(0)
+  isActive      Boolean        @default(true)
+  isNewArrival  Boolean        @default(false)
+  style         String?
+  colour        String?
+  jewelleryType JewelleryType
+  tryOnEnabled  Boolean        @default(true)
+  tryOnAssetUrl String? // transparent PNG used by AI
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  createdAt     DateTime       @default(now())
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  wishlist      WishlistItem[]
+  tryOnItems    TryOnItem[]
+  offers        Offer[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  sort      Int     @default(0)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?    @unique
+  user      User?      @relation(fields: [userId], references: [id])
+  guestKey  String?    @unique
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  qty       Int     @default(1)
+
+  @@unique([cartId, productId])
+}
+
+model WishlistItem {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id             String           @id @default(cuid())
+  orderNo        String           @unique
+  userId         String?
+  user           User?            @relation(fields: [userId], references: [id])
+  fullName       String
+  mobile         String
+  whatsapp       String?
+  email          String?
+  address        String?
+  city           String?
+  postalCode     String?
+  note           String?
+  deliveryMethod DeliveryMethod
+  paymentMethod  PaymentMethod
+  paymentStatus  PaymentStatus    @default(UNPAID)
+  subtotal       Int
+  deliveryFee    Int
+  total          Int
+  status         OrderStatus      @default(PENDING)
+  items          OrderItem[]
+  history        OrderStatusLog[]
+  createdAt      DateTime         @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Int
+  qty       Int
+}
+
+model OrderStatusLog {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus
+  createdAt DateTime    @default(now())
+}
+
+model AiModel {
+  id       String  @id @default(cuid())
+  name     String
+  imageUrl String
+  isActive Boolean @default(true)
+  tryOns   TryOn[]
+}
+
+model TryOn {
+  id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  source    TryOnSource
+  aiModelId String?
+  aiModel   AiModel?    @relation(fields: [aiModelId], references: [id])
+  inputUrl  String
+  resultUrl String?
+  status    TryOnStatus @default(PENDING)
+  error     String?
+  items     TryOnItem[]
+  createdAt DateTime    @default(now())
+}
+
+model TryOnItem {
+  id        String  @id @default(cuid())
+  tryOnId   String
+  tryOn     TryOn   @relation(fields: [tryOnId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Offer {
+  id         String   @id @default(cuid())
+  title      String
+  percentOff Int
+  startsAt   DateTime
+  endsAt     DateTime
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id])
+}
