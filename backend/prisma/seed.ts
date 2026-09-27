@@ -13,5 +13,9 @@ async function main() {
     const slug = name.toLowerCase().replace(/\s+/g, "-");
     await db.category.upsert({ where: { slug }, update: {}, create: { name, slug, sort: i } });
   }
+  console.log(`Seeded: admin@shop.lk / admin123, ${cats.length} categories`);   // ← added
 }
-main().finally(() => db.$disconnect());
+
+main()
+  .catch((e) => { console.error("Seed failed:", e); throw e; })
+  .finally(() => db.$disconnect());

@@ -12,16 +12,35 @@ const orderStatuses = ["PENDING", "CONFIRMED", "PROCESSING", "READY", "DISPATCHE
 
 const startOfDay = (d = new Date()) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
+const dayKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
 r.get("/dashboard", ah(async (_req, res) => {
   const today = startOfDay();
-  const [todayOrders, pending, processing, completed, sales] = await Promise.all([
+  const weekStart = new Date(today);
+  weekStart.setDate(weekStart.getDate() - 6);
+
+  const [todayOrders, pending, processing, completed, sales, weekOrders, recentOrders, lowStock] = await Promise.all([
     db.order.count({ where: { createdAt: { gte: today } } }),
     db.order.count({ where: { status: "PENDING" } }),
     db.order.count({ where: { status: { in: ["CONFIRMED", "PROCESSING", "READY", "DISPATCHED"] } } }),
     db.order.count({ where: { status: "DELIVERED", createdAt: { gte: today } } }),
     db.order.aggregate({ _sum: { total: true }, where: { createdAt: { gte: today }, status: { not: "CANCELLED" } } }),
+    db.order.findMany({ where: { createdAt: { gte: weekStart }, status: { not: "CANCELLED" } }, select: { createdAt: true, total: true } }),
+    db.order.findMany({ orderBy: { createdAt: "desc" }, take: 6, select: { id: true, orderNo: true, fullName: true, total: true, status: true, createdAt: true } }),
+    db.product.findMany({ where: { isActive: true, stock: { lte: 3 } }, orderBy: { stock: "asc" }, take: 6, select: { id: true, name: true, code: true, stock: true } }),
   ]);
-  res.json({ todayOrders, pending, processing, completed, todaySales: sales._sum.total ?? 0 });
+
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    return { date: dayKey(d), sales: 0, orders: 0 };
+  });
+  for (const o of weekOrders) {
+    const day = last7Days.find((x) => x.date === dayKey(o.createdAt));
+    if (day) { day.sales += o.total; day.orders += 1; }
+  }
+
+  res.json({ todayOrders, pending, processing, completed, todaySales: sales._sum.total ?? 0, last7Days, recentOrders, lowStock });
 }));
 
 r.get("/orders", ah(async (req, res) => {
