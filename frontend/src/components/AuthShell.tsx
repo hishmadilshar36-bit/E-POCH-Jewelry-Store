@@ -1,13 +1,15 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { useSettings } from "../context/SettingsContext";
 
 type Props = { title: string; subtitle: string; aside: ReactNode; children: ReactNode };
 
 export default function AuthShell({ title, subtitle, aside, children }: Props) {
+  const s = useSettings();
   return (
     <div className="auth">
       <aside className="auth-aside">
-        <Link to="/" className="auth-logo">[Shop name]</Link>
+        <Link to="/" className="auth-logo">{s.shopName}</Link>
         <div className="auth-aside-body">{aside}</div>
       </aside>
       <main className="auth-main">

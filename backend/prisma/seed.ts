@@ -8,12 +8,14 @@ async function main() {
     update: {},
     create: { name: "Admin", email: "admin@shop.lk", password: await bcrypt.hash("admin123", 10), role: "ADMIN" },
   });
-  const cats = ["Earrings","Bangles","Chains","Long Chains","Necklaces","Rings","Bracelets","Anklets","Bridal Jewellery","Hair Accessories","Fancy Jewellery"];
+
+  const cats = ["Earrings", "Bangles", "Chains", "Long Chains", "Necklaces", "Rings", "Bracelets", "Anklets", "Bridal Jewellery", "Hair Accessories", "Fancy Jewellery"];
   for (const [i, name] of cats.entries()) {
     const slug = name.toLowerCase().replace(/\s+/g, "-");
     await db.category.upsert({ where: { slug }, update: {}, create: { name, slug, sort: i } });
   }
-  console.log(`Seeded: admin@shop.lk / admin123, ${cats.length} categories`);   // ← added
+
+  console.log(`Seeded: admin@shop.lk / admin123, ${cats.length} categories`);
 }
 
 main()

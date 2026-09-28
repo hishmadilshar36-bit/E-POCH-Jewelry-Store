@@ -18,7 +18,7 @@ async function processNext() {
   try {
     const resultUrl = await aiProvider.generate({
       personImageUrl: job.inputUrl,
-      items: job.items.map((i: { product: { tryOnAssetUrl: any; images: { url: any; }[]; jewelleryType: any; }; }) => ({ imageUrl: i.product.tryOnAssetUrl ?? i.product.images[0]?.url, type: i.product.jewelleryType })),
+      items: job.items.map((i) => ({ imageUrl: i.product.tryOnAssetUrl ?? i.product.images[0]?.url ?? "", type: i.product.jewelleryType })),
     });
     await db.tryOn.update({ where: { id: job.id }, data: { status: "DONE", resultUrl } });
   } catch (e) {

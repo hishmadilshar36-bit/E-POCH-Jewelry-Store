@@ -1,5 +1,4 @@
 import "dotenv/config";
-import process from "process";
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   jwtSecret: process.env.JWT_SECRET ?? "dev",

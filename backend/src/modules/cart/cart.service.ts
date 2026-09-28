@@ -1,6 +1,8 @@
 import { Request } from "express";
 import { db } from "../../config/db";
 import { HttpError } from "../../middleware/error";
+import { getActiveOffers, priceFor } from "../../services/pricing";
+import { deliveryFeeFor, getSettings } from "../../services/settings";
 
 // Logged-in → cart by userId. Guest → cart by X-Cart-Key header (uuid kept in localStorage).
 export async function resolveCart(req: Request) {
@@ -13,12 +15,25 @@ export async function resolveCart(req: Request) {
 }
 
 export async function cartView(cartId: string) {
-  const items = await db.cartItem.findMany({
-    where: { cartId },
-    include: { product: { include: { images: { take: 1, orderBy: { sort: "asc" } } } } },
-  });
-  const subtotal = items.reduce((s: number, i: { product: { price: number; }; qty: number; }) => s + i.product.price * i.qty, 0);
-  return { id: cartId, items, subtotal };
+  const [rows, offers, settings] = await Promise.all([
+    db.cartItem.findMany({
+      where: { cartId },
+      orderBy: { id: "asc" },
+      include: { product: { include: { images: { take: 1, orderBy: { sort: "asc" } } } } },
+    }),
+    getActiveOffers(),
+    getSettings(),
+  ]);
+  const items = rows
+    .filter((i) => i.product.isActive)
+    .map((i) => {
+      const pricing = priceFor(i.product, offers);
+      const unitPrice = pricing.salePrice ?? i.product.price;
+      return { ...i, product: { ...i.product, ...pricing }, unitPrice, lineTotal: unitPrice * i.qty, inStock: i.product.stock >= i.qty };
+    });
+  const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
+  const deliveryFee = items.length ? deliveryFeeFor(settings, subtotal) : 0;
+  return { id: cartId, items, subtotal, deliveryFee, total: subtotal + deliveryFee, freeDeliveryOver: settings.freeDeliveryOver };
 }
 
 // Call after login: move guest cart items into the user cart.

@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import RequireAdmin from "./components/RequireAdmin";
+import RequireAuth from "./components/RequireAuth";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetails from "./pages/ProductDetails";
@@ -10,14 +11,23 @@ import CartPage from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import TrackOrder from "./pages/TrackOrder";
+import Account from "./pages/Account";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import { About, Contact, Delivery, Faq, NotFound } from "./pages/Info";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
+import ProductForm from "./pages/admin/ProductForm";
+import Categories from "./pages/admin/Categories";
 import AdminOrders from "./pages/admin/Orders";
 import AdminOrderDetail from "./pages/admin/OrderDetail";
+import Customers from "./pages/admin/Customers";
+import AiModels from "./pages/admin/AiModels";
+import Offers from "./pages/admin/Offers";
+import Reports from "./pages/admin/Reports";
+import SettingsPage from "./pages/admin/Settings";
 
 export default function App() {
   return (
@@ -33,6 +43,15 @@ export default function App() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order/:orderNo" element={<OrderConfirmation />} />
         <Route path="/track" element={<TrackOrder />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/delivery" element={<Delivery />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route element={<RequireAuth />}>
+          <Route path="/account" element={<Account />} />
+          <Route path="/account/:tab" element={<Account />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
       </Route>
 
       <Route path="/login" element={<Login />} />
@@ -41,9 +60,17 @@ export default function App() {
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
-          <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="orders/:id" element={<AdminOrderDetail />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="products/new" element={<ProductForm />} />
+          <Route path="products/:id" element={<ProductForm />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="ai-models" element={<AiModels />} />
+          <Route path="offers" element={<Offers />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>
     </Routes>

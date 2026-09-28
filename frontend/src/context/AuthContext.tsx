@@ -10,6 +10,7 @@ type Ctx = {
   login: (email: string, password: string) => Promise<User>;
   register: (b: RegisterInput) => Promise<User>;
   logout: () => void;
+  setUser: (u: User) => void;
 };
 
 const AuthContext = createContext<Ctx>(null!);
@@ -30,10 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (token: string, u: User) => {
     auth.set(token);
     setUser(u);
-    if (u.role === "CUSTOMER") {
-      await api.mergeCart().catch(() => undefined);
-      await refresh().catch(() => undefined);
-    }
+    if (u.role === "CUSTOMER") await api.mergeCart().catch(() => undefined);
+    await refresh().catch(() => undefined);
     return u;
   };
 
@@ -53,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       refresh().catch(() => undefined);
     },
+    setUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

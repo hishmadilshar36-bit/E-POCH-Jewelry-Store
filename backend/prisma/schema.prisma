@@ -85,6 +85,7 @@ model Category {
   imageUrl String?
   sort     Int       @default(0)
   products Product[]
+  offers   Offer[]
 }
 
 model Product {
@@ -196,11 +197,12 @@ model OrderStatusLog {
 }
 
 model AiModel {
-  id       String  @id @default(cuid())
-  name     String
-  imageUrl String
-  isActive Boolean @default(true)
-  tryOns   TryOn[]
+  id        String   @id @default(cuid())
+  name      String
+  imageUrl  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  tryOns    TryOn[]
 }
 
 model TryOn {
@@ -226,12 +228,35 @@ model TryOnItem {
   product   Product @relation(fields: [productId], references: [id])
 }
 
+// An offer applies to one product, one category, or (both empty) the whole shop.
 model Offer {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   title      String
   percentOff Int
   startsAt   DateTime
   endsAt     DateTime
+  isActive   Boolean   @default(true)
   productId  String?
-  product    Product? @relation(fields: [productId], references: [id])
+  product    Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+}
+
+// Single row (id = 1) holding the shop's editable details.
+model ShopSettings {
+  id               Int     @id @default(1)
+  shopName         String  @default("[Shop name]")
+  tagline          String  @default("Jewellery for every day and every occasion.")
+  phone            String  @default("")
+  whatsapp         String  @default("")
+  email            String  @default("")
+  address          String  @default("")
+  deliveryFee      Int     @default(450)
+  freeDeliveryOver Int?
+  bankDetails      String  @default("")
+  codEnabled       Boolean @default(true)
+  bankEnabled      Boolean @default(true)
+  onlineEnabled    Boolean @default(false)
+  pickupEnabled    Boolean @default(true)
 }

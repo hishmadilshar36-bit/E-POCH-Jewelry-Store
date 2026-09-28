@@ -1,17 +1,5 @@
+import { JewelleryType } from "@prisma/client";
 import { env } from "../../config/env";
-
-// Keep this service independent of the generated Prisma client's enum exports.
-export type JewelleryType =
-  | "EARRINGS"
-  | "NECKLACE"
-  | "CHAIN"
-  | "LONG_CHAIN"
-  | "BANGLE"
-  | "BRACELET"
-  | "RING"
-  | "ANKLET"
-  | "HAIR"
-  | "OTHER";
 
 export type TryOnRequest = {
   personImageUrl: string;                       // AI model image or customer photo
