@@ -12,7 +12,7 @@ export const statusLabel: Record<OrderStatus, string> = {
 };
 
 export const customerStatus: Record<OrderStatus, string> = {
-  PENDING: "Order received", CONFIRMED: "Confirmed", PROCESSING: "Being prepared", READY: "Ready",
+  PENDING: "Order received", CONFIRMED: "Order confirmed", PROCESSING: "Being prepared", READY: "Ready",
   DISPATCHED: "On the way", DELIVERED: "Delivered", CANCELLED: "Cancelled",
 };
 

@@ -13,7 +13,7 @@ const lkr = (n: number) => `LKR ${n.toLocaleString("en-LK")}`;
 export async function notifyOrderPlaced(order: Order & { items: OrderItem[] }) {
   const s = await getSettings();
   const lines = order.items.map((i) => `${i.name} × ${i.qty}`).join("\n");
-  await send(order.mobile, `${s.shopName}: order ${order.orderNo} received.\n${lines}\nTotal ${lkr(order.total)}.\nTrack it with your order number and mobile number.`);
+  await send(order.mobile, `${s.shopName}: order ${order.orderNo} received.\n${lines}\nTotal ${lkr(order.total)}.${order.paymentMethod === "COD" ? "" : "\nYour order is confirmed once we receive your payment."}\nTrack it with your order number and mobile number.`);
   await send(s.whatsapp || s.phone, `New order ${order.orderNo} from ${order.fullName} (${order.mobile}).\n${lines}\nTotal ${lkr(order.total)}`);
 }
 
@@ -34,3 +34,8 @@ export async function notifyStatusChanged(order: Order) {
 
 export const whatsappLink = (phone: string, text: string) =>
   `https://wa.me/94${phone.replace(/\D/g, "").replace(/^(94|0)/, "")}?text=${encodeURIComponent(text)}`;
+
+export async function notifyPaymentConfirmed(order: Order) {
+  const s = await getSettings();
+  await send(order.mobile, `${s.shopName}: we received your payment of ${lkr(order.total)}. Your order ${order.orderNo} is confirmed.`);
+}

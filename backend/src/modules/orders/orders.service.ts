@@ -1,9 +1,9 @@
-import { OrderStatus, Prisma } from "@prisma/client";
+import { Order, OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { db } from "../../config/db";
 import { HttpError } from "../../middleware/error";
 import { getActiveOffers, unitPrice } from "../../services/pricing";
 import { deliveryFeeFor, getSettings } from "../../services/settings";
-import { notifyStatusChanged } from "../../services/notify";
+import { notifyPaymentConfirmed, notifyStatusChanged } from "../../services/notify";
 
 export type CheckoutInput = {
   fullName: string; mobile: string; whatsapp?: string; email?: string;
@@ -21,6 +21,14 @@ export const nextStatuses: Record<OrderStatus, OrderStatus[]> = {
   DELIVERED: [],
   CANCELLED: [],
 };
+
+// Bank transfer and online orders are confirmed only after the payment is received.
+// Cash on delivery is paid at the door, so those orders are confirmed by the shop.
+export const needsPaymentFirst = (o: Pick<Order, "paymentMethod" | "paymentStatus">) =>
+  o.paymentMethod !== "COD" && o.paymentStatus !== "PAID";
+
+export const allowedNext = (o: Pick<Order, "status" | "paymentMethod" | "paymentStatus">) =>
+  nextStatuses[o.status].filter((s) => !(s === "CONFIRMED" && needsPaymentFirst(o)));
 
 async function nextOrderNo(tx: Prisma.TransactionClient) {
   const last = await tx.order.findFirst({ orderBy: { createdAt: "desc" }, select: { orderNo: true } });
@@ -76,6 +84,7 @@ export async function changeStatus(orderId: string, to: OrderStatus) {
   const o = await db.order.findUnique({ where: { id: orderId }, include: { items: true } });
   if (!o) throw new HttpError(404, "Order not found");
   if (!nextStatuses[o.status].includes(to)) throw new HttpError(409, `An order that is ${o.status.toLowerCase()} can't be moved to ${to.toLowerCase()}.`);
+  if (to === "CONFIRMED" && needsPaymentFirst(o)) throw new HttpError(409, "Mark the payment as paid first. The order is confirmed when the payment is received.");
 
   const updated = await db.$transaction(async (tx) => {
     if (to === "CANCELLED") {
@@ -86,4 +95,17 @@ export async function changeStatus(orderId: string, to: OrderStatus) {
   });
   notifyStatusChanged(updated).catch(console.error);
   return updated;
+}
+
+// Marking a pending order as paid confirms it and tells the customer.
+export async function setPayment(orderId: string, paymentStatus: PaymentStatus) {
+  const o = await db.order.findUnique({ where: { id: orderId } });
+  if (!o) throw new HttpError(404, "Order not found");
+  const confirm = paymentStatus === "PAID" && o.status === "PENDING";
+  const updated = await db.$transaction(async (tx) => {
+    if (confirm) await tx.orderStatusLog.create({ data: { orderId, status: "CONFIRMED" } });
+    return tx.order.update({ where: { id: orderId }, data: { paymentStatus, ...(confirm ? { status: "CONFIRMED" as const } : {}) } });
+  });
+  if (confirm) notifyPaymentConfirmed(updated).catch(console.error);
+  return { ...updated, confirmed: confirm };
 }

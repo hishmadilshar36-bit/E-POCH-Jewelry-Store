@@ -1,8 +1,44 @@
 import { Link } from "react-router-dom";
 import type { Order, OrderStatus } from "../api/types";
-import { customerStatus, dateTime, deliveryLabel, lkr, paymentLabel } from "../api/format";
+import { customerStatus, dateTime, deliveryLabel, lkr, paymentLabel, paymentStatusLabel } from "../api/format";
+import { useSettings } from "../context/SettingsContext";
 import Icon from "./Icon";
 import { ProductImage } from "./ui";
+
+// Bank transfer and online orders are confirmed once the payment is received.
+export const awaitingPayment = (o: Order) => o.status === "PENDING" && o.paymentMethod !== "COD" && o.paymentStatus !== "PAID";
+export const isConfirmed = (o: Order) => o.status !== "PENDING" && o.status !== "CANCELLED";
+
+export function OrderNotice({ order }: { order: Order }) {
+  const s = useSettings();
+  if (order.status === "CANCELLED") return null;
+  if (isConfirmed(order)) {
+    return (
+      <div className="notice notice-ok" role="status">
+        <Icon name="check" size={22} />
+        <div><strong>Your order is confirmed</strong><p>{order.paymentStatus === "PAID" ? `Payment of ${lkr(order.total)} received. ` : ""}We're getting your pieces ready.</p></div>
+      </div>
+    );
+  }
+  if (awaitingPayment(order)) {
+    return (
+      <div className="notice notice-warn" role="status">
+        <Icon name="clock" size={22} />
+        <div>
+          <strong>Waiting for your payment</strong>
+          <p>Transfer <strong>{lkr(order.total)}</strong> with <strong>{order.orderNo}</strong> as the reference and send us the slip. Your order is confirmed as soon as we receive it.</p>
+          {order.paymentMethod === "BANK_TRANSFER" && (s.bankDetails ? <div className="bank-box">{s.bankDetails}</div> : <p className="muted">We'll send you our bank details on WhatsApp.</p>)}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="notice notice-info" role="status">
+      <Icon name="phone" size={22} />
+      <div><strong>We'll call you to confirm</strong><p>We'll contact you on {order.mobile} to confirm your order. You pay when it arrives.</p></div>
+    </div>
+  );
+}
 
 const flowDelivery: OrderStatus[] = ["PENDING", "CONFIRMED", "PROCESSING", "DISPATCHED", "DELIVERED"];
 const flowPickup: OrderStatus[] = ["PENDING", "CONFIRMED", "PROCESSING", "READY", "DELIVERED"];
@@ -57,7 +93,7 @@ export function OrderLines({ order }: { order: Order }) {
         <div className="summary-row"><span>Subtotal</span><span>{lkr(order.subtotal)}</span></div>
         <div className="summary-row"><span>{deliveryLabel[order.deliveryMethod]}</span><span>{order.deliveryFee ? lkr(order.deliveryFee) : "Free"}</span></div>
         <div className="summary-row summary-total"><span>Total</span><span>{lkr(order.total)}</span></div>
-        <div className="summary-row muted"><span>Payment</span><span>{paymentLabel[order.paymentMethod]}</span></div>
+        <div className="summary-row muted"><span>Payment</span><span>{paymentLabel[order.paymentMethod]}, {paymentStatusLabel[order.paymentStatus].toLowerCase()}</span></div>
       </div>
     </>
   );

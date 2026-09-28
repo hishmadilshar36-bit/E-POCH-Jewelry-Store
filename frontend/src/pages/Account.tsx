@@ -10,7 +10,7 @@ import ProductCard from "../components/ProductCard";
 import PasswordInput from "../components/PasswordInput";
 import Icon from "../components/Icon";
 import { EmptyState, ErrorState, PageLoading, ProductImage, StatusPill } from "../components/ui";
-import { OrderLines, OrderTimeline } from "../components/OrderView";
+import { OrderLines, OrderNotice, OrderTimeline } from "../components/OrderView";
 
 function Orders() {
   const [orders, setOrders] = useState<Order[] | null>(null);
@@ -31,6 +31,7 @@ function Orders() {
             <div><strong>{o.orderNo}</strong><div className="muted" style={{ fontSize: 14 }}>Placed {shortDate(o.createdAt)} · {o.items.reduce((s, i) => s + i.qty, 0)} pieces</div></div>
             <StatusPill status={o.status} label={customerStatus[o.status]} />
           </div>
+          {o.status === "PENDING" && <OrderNotice order={o} />}
           <div className="order-card-thumbs">
             {o.items.slice(0, 5).map((i) => <span key={i.id} className="order-line-img"><ProductImage url={i.product?.images[0]?.url} alt={i.name} /></span>)}
           </div>

@@ -5,7 +5,7 @@ import { db } from "../../config/db";
 import { ah, HttpError } from "../../middleware/error";
 import { requireAdmin } from "../../middleware/auth";
 import { upload, fileUrl } from "../../middleware/upload";
-import { changeStatus, nextStatuses } from "../orders/orders.service";
+import { allowedNext, changeStatus, setPayment } from "../orders/orders.service";
 
 const r = Router();
 r.use(requireAdmin);
@@ -103,7 +103,7 @@ r.get("/orders/:id", ah(async (req, res) => {
     },
   });
   if (!o) throw new HttpError(404, "Order not found");
-  res.json({ ...o, nextStatuses: nextStatuses[o.status] });
+  res.json({ ...o, nextStatuses: allowedNext(o) });
 }));
 
 r.patch("/orders/:id/status", ah(async (req, res) => {
@@ -113,7 +113,7 @@ r.patch("/orders/:id/status", ah(async (req, res) => {
 
 r.patch("/orders/:id/payment", ah(async (req, res) => {
   const { paymentStatus } = z.object({ paymentStatus: z.enum(["UNPAID", "PAID", "REFUNDED"]) }).parse(req.body);
-  res.json(await db.order.update({ where: { id: req.params.id }, data: { paymentStatus } }));
+  res.json(await setPayment(req.params.id, paymentStatus));
 }));
 
 // ---------- Customers ----------

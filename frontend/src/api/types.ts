@@ -31,7 +31,7 @@ export type Order = {
   deliveryMethod: DeliveryMethod; paymentMethod: PaymentMethod; paymentStatus: PaymentStatus;
   subtotal: number; deliveryFee: number; total: number; status: OrderStatus; createdAt: string;
   items: OrderItem[]; history?: StatusLog[]; _count?: { items: number };
-  nextStatuses?: OrderStatus[]; user?: { id: string; email: string } | null;
+  nextStatuses?: OrderStatus[]; user?: { id: string; email: string } | null; confirmed?: boolean;
 };
 export type OrdersPage = Paged<Order> & { byStatus: Partial<Record<OrderStatus, number>> };
 

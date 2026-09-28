@@ -119,6 +119,11 @@ async function remove() {
   console.log(`Demo content removed: ${deleted} products deleted, ${hidden} hidden because they appear in orders or try-ons.`);
 }
 
+declare const process: {
+  argv: string[];
+  exit(code?: number): never;
+};
+
 (process.argv.includes("--remove") ? remove() : add())
   .catch((e) => { console.error("Demo seed failed:", e); process.exit(1); })
   .finally(() => db.$disconnect());

@@ -5,7 +5,7 @@ import type { Order } from "../api/types";
 import { customerStatus, shortDate, whatsappLink } from "../api/format";
 import { useSettings } from "../context/SettingsContext";
 import Icon from "../components/Icon";
-import { OrderLines, OrderTimeline } from "../components/OrderView";
+import { OrderLines, OrderNotice, OrderTimeline } from "../components/OrderView";
 
 export default function TrackOrder() {
   const [sp, setSp] = useSearchParams();
@@ -55,6 +55,7 @@ export default function TrackOrder() {
                 <div><h2 id="status-title" style={{ marginBottom: 4 }}>{customerStatus[order.status]}</h2><span className="muted">{order.orderNo} · placed {shortDate(order.createdAt)}</span></div>
                 {contact && <a href={whatsappLink(contact, `Hi, about my order ${order.orderNo}.`)} target="_blank" rel="noreferrer" className="btn btn-quiet btn-sm"><Icon name="chat" size={16} />Ask on WhatsApp</a>}
               </div>
+              <OrderNotice order={order} />
               <OrderTimeline order={order} />
             </section>
             <section className="card" aria-labelledby="items-title">
