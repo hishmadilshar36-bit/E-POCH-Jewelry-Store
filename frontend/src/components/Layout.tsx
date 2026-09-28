@@ -90,7 +90,7 @@ export default function Layout() {
                 <Icon name="user" />
               </Link>
             ) : (
-              <Link to="/login" state={{ from: loc.pathname + loc.search }} className="header-signin">Sign in</Link>
+              <Link to="/login" state={{ from: loc.pathname + loc.search }} className="icon-btn header-signin" aria-label="Sign in"><Icon name="user" /><span className="header-signin-label" aria-hidden="true">Sign in</span></Link>
             )}
           </div>
         </div>
@@ -124,15 +124,8 @@ export default function Layout() {
       <footer className="site-footer">
         <div className="footer-inner">
           <div className="footer-brand">
-            <span className="brand brand-light">{s.shopName}</span>
+            <Link to="/" className="brand">{s.shopName}</Link>
             <p>{s.tagline}</p>
-          </div>
-          <div className="footer-col">
-            <h2>Shop</h2>
-            <Link to="/shop">All jewellery</Link>
-            <Link to="/shop?newArrivals=1">New arrivals</Link>
-            <Link to="/shop?onSale=1">Offers</Link>
-            <Link to="/build-look">Create your look</Link>
           </div>
           <div className="footer-col">
             <h2>Help</h2>
@@ -150,7 +143,13 @@ export default function Layout() {
             {!s.phone && !s.whatsapp && !s.email && !s.address && <Link to="/contact">Contact us</Link>}
           </div>
         </div>
-        <div className="footer-base">© {new Date().getFullYear()} {s.shopName}</div>
+        <div className="footer-base">
+          <span>© {new Date().getFullYear()} {s.shopName}</span>
+          <nav className="footer-legal" aria-label="Legal">
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   );

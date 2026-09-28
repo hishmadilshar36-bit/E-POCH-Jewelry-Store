@@ -5,7 +5,6 @@ import type { JewelleryType, Product } from "../api/types";
 import { lkr } from "../api/format";
 import { useCart } from "../context/CartContext";
 import Icon from "../components/Icon";
-import JewelIcon from "../components/JewelIcon";
 import { EmptyState, PageLoading, Price, ProductImage } from "../components/ui";
 
 const steps: { title: string; short: string; types: JewelleryType[] }[] = [
@@ -41,7 +40,7 @@ export default function BuildLook() {
         const p = picked[i];
         return (
           <div key={s.short} className={`tray-slot ${p ? "" : "tray-slot-empty"}`}>
-            <span className="tray-slot-img">{p ? <ProductImage url={p.images[0]?.url} alt="" type={p.jewelleryType} iconSize={28} /> : <JewelIcon type={s.types[0]} size={28} />}</span>
+            <span className="tray-slot-img">{p ? <ProductImage url={p.images[0]?.url} alt="" type={p.jewelleryType} iconSize={28} /> : <Icon name="plus" size={20} />}</span>
             <span className="tray-slot-text">
               {p ? <><strong>{p.name}</strong><span className="muted">{lkr(p.salePrice ?? p.price)}</span></> : <span className="muted">{s.short}: not chosen</span>}
             </span>

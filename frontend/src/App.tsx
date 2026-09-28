@@ -14,7 +14,7 @@ import TrackOrder from "./pages/TrackOrder";
 import Account from "./pages/Account";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import { About, Contact, Delivery, Faq, NotFound } from "./pages/Info";
+import { About, Contact, Delivery, Faq, NotFound, Privacy, Terms } from "./pages/Info";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -47,6 +47,8 @@ export default function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/delivery" element={<Delivery />} />
         <Route path="/faq" element={<Faq />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route element={<RequireAuth />}>
           <Route path="/account" element={<Account />} />
           <Route path="/account/:tab" element={<Account />} />

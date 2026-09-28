@@ -4,7 +4,6 @@ import { api } from "../../api/client";
 import type { Category } from "../../api/types";
 import { useToast } from "../../context/ToastContext";
 import Icon from "../../components/Icon";
-import JewelIcon from "../../components/JewelIcon";
 import { ConfirmDialog, ErrorState, Modal, PageLoading } from "../../components/ui";
 
 export default function Categories() {
@@ -58,7 +57,7 @@ export default function Categories() {
               <tbody>
                 {cats.map((c) => (
                   <tr key={c.id}>
-                    <td><div className="cell-product"><span className="cat-row-img">{c.imageUrl ? <img src={c.imageUrl} alt="" /> : <JewelIcon slug={c.slug} size={26} />}</span><strong>{c.name}</strong></div></td>
+                    <td><div className="cell-product"><span className="cat-row-img">{c.imageUrl ? <img src={c.imageUrl} alt="" /> : <span aria-hidden="true">{c.name.charAt(0)}</span>}</span><strong>{c.name}</strong></div></td>
                     <td className="num">{c.sort}</td>
                     <td className="num"><Link to={`/admin/products?category=${c.id}`}>{c._count?.products ?? 0}</Link></td>
                     <td>
@@ -83,12 +82,12 @@ export default function Categories() {
             <div className="field">
               <span className="field-label">Image <span className="optional">(optional)</span></span>
               <div className="asset-row">
-                <span className="cat-row-img" style={{ width: 72, height: 72 }}>{preview || current?.imageUrl ? <img src={preview ?? current!.imageUrl!} alt="" /> : <JewelIcon slug={current?.slug ?? ""} size={36} />}</span>
+                <span className="cat-row-img" style={{ width: 72, height: 72 }}>{preview || current?.imageUrl ? <img src={preview ?? current!.imageUrl!} alt="" /> : <Icon name="image" size={28} />}</span>
                 <label className="btn btn-quiet btn-sm"><Icon name="upload" size={16} />Choose image
                   <input name="image" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; setPreview(f ? URL.createObjectURL(f) : undefined); }} />
                 </label>
               </div>
-              <span className="field-hint">Without an image, a drawing that matches the name is shown.</span>
+              <span className="field-hint">Without an image, the first letter of the name is shown.</span>
             </div>
             {formErr && <p className="form-error" role="alert">{formErr}</p>}
             <div className="modal-foot" style={{ margin: "4px -24px -24px" }}>

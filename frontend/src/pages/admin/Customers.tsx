@@ -45,7 +45,7 @@ export default function Customers() {
                   {data.items.map((c) => (
                     <tr key={c.id}>
                       <td><button className="btn-link" style={{ minHeight: 0, textAlign: "left" }} onClick={() => openCustomer(c.id)}>{c.name}</button><span className="muted" style={{ display: "block", fontSize: 13 }}>{c.email}</span></td>
-                      <td>{c.phone || <span className="muted">—</span>}</td>
+                      <td>{c.phone || <span className="muted">Not given</span>}</td>
                       <td className="num">{c._count.orders}</td>
                       <td className="num">{lkr(c.totalSpent)}</td>
                       <td className="muted">{shortDate(c.createdAt)}</td>
@@ -64,7 +64,7 @@ export default function Customers() {
           <div className="stack">
             <dl className="kv">
               <dt>Email</dt><dd><a href={`mailto:${detail.email}`}>{detail.email}</a></dd>
-              <dt>Mobile</dt><dd>{detail.phone || "—"}</dd>
+              <dt>Mobile</dt><dd>{detail.phone || "Not given"}</dd>
               <dt>Joined</dt><dd>{shortDate(detail.createdAt)}</dd>
             </dl>
             {detail.phone && (

@@ -10,7 +10,7 @@ const sorts = [
   { v: "new", label: "Newest" },
   { v: "price_asc", label: "Price: low to high" },
   { v: "price_desc", label: "Price: high to low" },
-  { v: "name", label: "Name A–Z" },
+  { v: "name", label: "Name A to Z" },
 ];
 
 export default function Shop() {
@@ -51,7 +51,7 @@ export default function Shop() {
   const activeChips = useMemo(() => {
     const chips: { label: string; clear: () => void }[] = [];
     if (q) chips.push({ label: `“${q}”`, clear: () => set("q", null) });
-    if (sp.get("minPrice") || sp.get("maxPrice")) chips.push({ label: `LKR ${sp.get("minPrice") || "0"} – ${sp.get("maxPrice") || "any"}`, clear: () => { const n = new URLSearchParams(sp); n.delete("minPrice"); n.delete("maxPrice"); n.delete("page"); setSp(n); } });
+    if (sp.get("minPrice") || sp.get("maxPrice")) chips.push({ label: `LKR ${sp.get("minPrice") || "0"} to ${sp.get("maxPrice") || "any"}`, clear: () => { const n = new URLSearchParams(sp); n.delete("minPrice"); n.delete("maxPrice"); n.delete("page"); setSp(n); } });
     if (sp.get("style")) chips.push({ label: sp.get("style")!, clear: () => set("style", null) });
     if (sp.get("colour")) chips.push({ label: sp.get("colour")!, clear: () => set("colour", null) });
     if (sp.get("inStock")) chips.push({ label: "In stock", clear: () => set("inStock", null) });
@@ -107,7 +107,7 @@ export default function Shop() {
             <div className="price-inputs">
               <label className="sr-only" htmlFor="minPrice">Minimum price</label>
               <input id="minPrice" name="minPrice" type="number" min={0} inputMode="numeric" placeholder={facets ? String(facets.minPrice) : "Min"} defaultValue={sp.get("minPrice") ?? ""} />
-              <span aria-hidden="true">–</span>
+              <span aria-hidden="true">to</span>
               <label className="sr-only" htmlFor="maxPrice">Maximum price</label>
               <input id="maxPrice" name="maxPrice" type="number" min={0} inputMode="numeric" placeholder={facets ? String(facets.maxPrice) : "Max"} defaultValue={sp.get("maxPrice") ?? ""} />
             </div>

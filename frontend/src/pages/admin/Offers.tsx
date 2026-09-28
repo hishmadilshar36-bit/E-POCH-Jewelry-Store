@@ -92,7 +92,7 @@ export default function Offers() {
                       <td><strong>{o.title}</strong></td>
                       <td className="num">{o.percentOff}%</td>
                       <td>{o.product ? `${o.product.name} (${o.product.code})` : o.category ? `All ${o.category.name.toLowerCase()}` : "Whole shop"}</td>
-                      <td className="muted">{shortDate(o.startsAt)} – {shortDate(o.endsAt)}</td>
+                      <td className="muted">{shortDate(o.startsAt)} to {shortDate(o.endsAt)}</td>
                       <td><span className={`pill ${st.cls}`}>{st.label}</span></td>
                       <td><div className="row-actions">
                         <button className="icon-btn" aria-label={`Edit ${o.title}`} onClick={() => open(o)}><Icon name="edit" size={18} /></button>

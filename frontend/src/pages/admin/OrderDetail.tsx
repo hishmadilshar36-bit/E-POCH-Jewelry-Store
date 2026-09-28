@@ -35,10 +35,17 @@ export default function AdminOrderDetail() {
     finally { setBusy(false); }
   };
   const pay = async (ps: PaymentStatus) => {
-    try { await api.admin.setPayment(o.id, ps); show(`Payment marked ${paymentStatusLabel[ps].toLowerCase()}`); load(); }
+    setBusy(true);
+    try {
+      const r = await api.admin.setPayment(o.id, ps);
+      show(r.confirmed ? "Payment received. Order confirmed and the customer was told." : `Payment marked ${paymentStatusLabel[ps].toLowerCase()}`);
+      load();
+    }
     catch (e) { show((e as Error).message, { kind: "error" }); }
+    finally { setBusy(false); }
   };
 
+  const waitingPay = o.status === "PENDING" && o.paymentMethod !== "COD" && o.paymentStatus !== "PAID";
   const actions = (o.nextStatuses ?? []).filter((st) => st !== "CANCELLED");
   const labelFor = (st: OrderStatus) => (st === "DELIVERED" && o.deliveryMethod === "PICKUP" ? "Mark collected" : actionLabel[st]);
   const canCancel = o.nextStatuses?.includes("CANCELLED");
@@ -58,7 +65,7 @@ export default function AdminOrderDetail() {
         </div>
       </div>
 
-      <div className="print-only"><strong>{s.shopName}</strong>{s.phone && ` · ${s.phone}`}{s.address && ` · ${s.address}`}</div>
+      <div className="print-only"><strong>{s.shopName}</strong>{s.phone && <><br />{s.phone}</>}{s.address && <><br />{s.address}</>}</div>
 
       <div className="detail-grid">
         <div className="stack">
@@ -101,12 +108,14 @@ export default function AdminOrderDetail() {
         </div>
 
         <div className="detail-side">
-          {(actions.length > 0 || canCancel) && (
+          {(actions.length > 0 || canCancel || waitingPay) && (
             <section className="panel no-print">
               <h2 style={{ fontSize: 22, marginBottom: 14 }}>Next step</h2>
+              {waitingPay && <p className="muted" style={{ marginBottom: 12 }}>Waiting for payment. Check the slip or your account, then confirm. The customer sees the order as confirmed.</p>}
               <div className="status-actions">
+                {waitingPay && <button className="btn btn-primary btn-block" disabled={busy} onClick={() => pay("PAID")}><Icon name="check" size={18} />Payment received, confirm order</button>}
                 {actions.map((st, i) => (
-                  <button key={st} className={`btn ${i === 0 ? "btn-primary" : "btn-secondary"} btn-block`} disabled={busy} onClick={() => move(st)}>{labelFor(st)}</button>
+                  <button key={st} className={`btn ${i === 0 && !waitingPay ? "btn-primary" : "btn-secondary"} btn-block`} disabled={busy} onClick={() => move(st)}>{labelFor(st)}</button>
                 ))}
                 {canCancel && <button className="btn-link" style={{ color: "var(--error)" }} onClick={() => setCancelling(true)}>Cancel order</button>}
               </div>
@@ -143,7 +152,7 @@ export default function AdminOrderDetail() {
               <dt>Status</dt><dd><span className={`pill pill-${o.paymentStatus.toLowerCase()}`}>{paymentStatusLabel[o.paymentStatus]}</span></dd>
             </dl>
             <div className="contact-actions no-print">
-              {o.paymentStatus !== "PAID" && <button className="btn btn-secondary btn-sm" onClick={() => pay("PAID")}><Icon name="check" size={16} />Mark as paid</button>}
+              {o.paymentStatus !== "PAID" && !waitingPay && <button className="btn btn-secondary btn-sm" disabled={busy} onClick={() => pay("PAID")}><Icon name="check" size={16} />Mark as paid</button>}
               {o.paymentStatus === "PAID" && <button className="btn btn-quiet btn-sm" onClick={() => pay("UNPAID")}>Mark as not paid</button>}
               {o.paymentStatus === "PAID" && o.status === "CANCELLED" && <button className="btn btn-quiet btn-sm" onClick={() => pay("REFUNDED")}>Mark refunded</button>}
             </div>

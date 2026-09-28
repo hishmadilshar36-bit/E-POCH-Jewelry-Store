@@ -3,13 +3,12 @@ import { Link } from "react-router-dom";
 import type { JewelleryType, OrderStatus, Pricing } from "../api/types";
 import { lkr, statusLabel } from "../api/format";
 import Icon, { IconName } from "./Icon";
-import JewelIcon from "./JewelIcon";
 
 /* ---------- Product image with a drawn placeholder ---------- */
 export function ProductImage({ url, alt, type, className = "", iconSize = 72 }: { url?: string | null; alt: string; type?: JewelleryType; className?: string; iconSize?: number }) {
   const [failed, setFailed] = useState(false);
   if (url && !failed) return <img src={url} alt={alt} className={`pimg ${className}`} loading="lazy" onError={() => setFailed(true)} />;
-  return <span className={`pimg pimg-empty ${className}`} role="img" aria-label={alt}><JewelIcon type={type} size={iconSize} strokeWidth={1.3} /></span>;
+  return <span className={`pimg pimg-empty ${className}`} role="img" aria-label={alt} data-type={type}><Icon name="diamond" size={Math.round(iconSize * 0.6)} /></span>;
 }
 
 /* ---------- Price with offer ---------- */
